@@ -18,6 +18,7 @@ import ltd.newbee.mall.controller.vo.NewBeeMallUserVO;
 import ltd.newbee.mall.entity.NewBeeMallGoods;
 import ltd.newbee.mall.entity.NewBeeMallShoppingCartItem;
 import ltd.newbee.mall.entity.log.NewBeeMailShoppingCartItemLogs;
+import ltd.newbee.mall.service.HDFSService;
 import ltd.newbee.mall.service.NewBeeMallGoodsService;
 import ltd.newbee.mall.service.NewBeeMallShoppingCartService;
 import ltd.newbee.mall.util.Result;
@@ -39,6 +40,9 @@ public class ShoppingCartController {
 
     @Resource
     private NewBeeMallGoodsService newBeeMallGoodsService;
+
+    @Resource
+    private HDFSService hdfsService;
 
     @GetMapping("/shop-cart")
     public String cartListPage(HttpServletRequest request,
@@ -82,9 +86,15 @@ public class ShoppingCartController {
         return ResultGenerator.genFailResult(saveResult);
     }
 
+    /**
+     * 收集用户点击加入购物车的日志到HDFS
+     * @param id
+     * @param httpSession
+     * @return
+     */
     @GetMapping("/addHDFS")
     @ResponseBody
-    public NewBeeMailShoppingCartItemLogs addToHDFS( int id, HttpSession httpSession){
+    public void addToHDFS( int id, HttpSession httpSession){
 
         NewBeeMallUserVO user = (NewBeeMallUserVO) httpSession.getAttribute(Constants.MALL_USER_SESSION_KEY);
 
@@ -103,8 +113,8 @@ public class ShoppingCartController {
         String s = JSON.toJSONString(newBeeMailShoppingCartItemLogs);
         System.out.println(s);
         //落地到HDFS
+        hdfsService.logToHDFS(s);
 
-        return newBeeMailShoppingCartItemLogs;
     }
 
 
